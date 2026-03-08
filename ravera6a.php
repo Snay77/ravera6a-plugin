@@ -29,6 +29,8 @@ require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsTaxonomy.php';
 // require_once plugin_dir_path(__FILE__) . 'inc/ravera6aNewsTaxonomy.php';
 // require_once plugin_dir_path(__FILE__) . 'inc/ravera6aBoursesTaxonomy.php';
 
+require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsSecurity.php';
+
 
 
 use Ravera6a\ravera6aNewsPostType;
@@ -41,6 +43,8 @@ use Ravera6a\ravera6aTripsTaxonomy;
 // use Ravera6a\ravera6aNewsTaxonomy;
 // use Ravera6a\ravera6aBoursesTaxonomy;
 
+use Ravera6a\ravera6aTripsSecurity;
+
 (new ravera6aNewsPostType())->register();
 (new ravera6aTripsPostType())->register();
 (new ravera6aBoursesPostType())->register();
@@ -50,3 +54,5 @@ use Ravera6a\ravera6aTripsTaxonomy;
 (new ravera6aTripsTaxonomy())->register();
 // (new ravera6aNewsTaxonomy())->register();
 // (new ravera6aBoursesTaxonomy())->register();
+
+(new ravera6aTripsSecurity())->register();
