@@ -34,6 +34,10 @@ class ravera6aTripsPostType
             'menu_position' => 6,
             'menu_icon' => 'dashicons-location-alt',
             'supports' => ['title', 'editor', 'thumbnail'],
+            'taxonomies' => [
+                ravera6aTripsTaxonomy::TAXONOMY,
+                ravera6aTripsTaxonomy::YEAR_TAXONOMY,
+            ],
         ];
 
         register_post_type(self::POST_TYPE, $args);
