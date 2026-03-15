@@ -1,0 +1,141 @@
+.contact-container label {
+    color: var(--wp--preset--color--primary-accent);
+}
+
+.contact-container .privacy-policy-text {
+    color: var(--wp--preset--color--primary-accent);
+}
+
+.contact-container .privacy-policy-text a {
+    color: var(--wp--preset--color--primary-accent);
+}
+
+.contact-container .privacy-policy-text a:hover {
+    opacity: 0.8;
+}
+
+.contact-container form {
+    display: flex;
+    flex-direction: column;
+    gap: 50px;
+}
+
+.nom-prenom {
+    display: flex;
+    gap: 10%;
+}
+
+.form-flex {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    gap: 10px;
+}
+
+.form-flex input,
+.form-flex textarea {
+    width: 100%;
+    background-color: var(--wp--preset--color--form-background-input);
+    border: 1px solid var(--wp--preset--color--form-border-input);
+    border-radius: 8px;
+    color: var(--wp--preset--color--primary-accent);
+    box-sizing: border-box;
+}
+
+.form-flex input {
+    min-height: 45px;
+}
+
+.form-flex textarea {
+    resize: vertical;
+    min-height: 260px;
+}
+
+.form-flex input:focus,
+.form-flex textarea:focus {
+    outline: none;
+    border-color: var(--wp--preset--color--primary);
+}
+
+.contact-container-envoie {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.required-red {
+    color: var(--wp--preset--color--primary);
+}
+
+.contact-container-envoie p {
+    color: var(--wp--preset--color--primary);
+    margin: 0;
+}
+
+.contact-container-envoie .envoie-input {
+    padding: 15px 30px;
+    border-radius: 10px;
+    box-shadow: 0 15px 15px rgba(0, 0, 0, 0.15);
+    text-decoration: none;
+    color: var(--wp--preset--color--white);
+    background-color: var(--wp--preset--color--primary);
+    border: none;
+    cursor: pointer;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+}
+
+.contact-container-envoie .envoie-input:hover {
+    opacity: 0.92;
+    transform: translateY(-1px);
+}
+
+.contact-container-envoie .checkbox-pointer {
+    cursor: pointer;
+}
+
+.confirmation-message,
+.error-message {
+    width: 100%;
+    max-width: 1000px;
+    margin: 30px auto 0;
+    padding: 16px 20px;
+    border-radius: 10px;
+    box-sizing: border-box;
+}
+
+.confirmation-message {
+    color: #155724;
+    background-color: #d4edda;
+    border: 1px solid #c3e6cb;
+}
+
+.error-message {
+    color: #721c24;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+@media (max-width: 768px) {
+    .contact-container-bloc {
+        gap: 32px;
+        padding-top: 32px;
+        padding-bottom: 60px;
+    }
+
+    .contact-container form {
+        gap: 32px;
+    }
+
+    .nom-prenom {
+        flex-direction: column;
+        gap: 32px;
+    }
+
+    .form-flex textarea {
+        min-height: 220px;
+    }
+
+    .contact-container-envoie .envoie-input {
+        width: 100%;
+    }
+}
