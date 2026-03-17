@@ -1,4 +1,5 @@
 <?php
+
 namespace Ravera6a;
 
 class ravera6aFields
@@ -86,9 +87,26 @@ class ravera6aFields
         }
     }
 
+    public function handleArchiveQuery(): void
+    {
+        add_action('pre_get_posts', function ($query) {
+            if (
+                !is_admin() &&
+                $query->is_main_query() &&
+                is_post_type_archive(ravera6aBoursesPostType::POST_TYPE)
+            ) {
+                $query->set('meta_key', 'date');
+                $query->set('orderby', 'meta_value');
+                $query->set('meta_type', 'DATE');
+                $query->set('order', 'DESC');
+            }
+        });
+    }
+
     public function register(): void
     {
         add_action('acf/init', [$this, 'defineFields']);
         add_action('init', [$this, 'defineFieldsPostMeta']);
+        $this->handleArchiveQuery();
     }
 }
