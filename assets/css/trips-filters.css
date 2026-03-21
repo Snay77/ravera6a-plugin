@@ -10,24 +10,22 @@
     align-items: center;
     justify-content: center;
     padding: 10px 18px;
-    border-radius: var(--wp--custom--radius--full);
-    background: var(--wp--preset--color--white);
-    color: var(--wp--preset--color--primary-accent);
+    border-radius: var(--wp--custom--radius--s); /* 👈 comme les boutons */
+    background: var(--wp--preset--color--primary); /* 👈 rouge */
+    color: var(--wp--preset--color--white);
     text-decoration: none;
-    box-shadow: var(--wp--preset--shadow--medium);
     transition: all 0.3s ease-in;
     font-size: var(--wp--preset--font-size--s);
-    font-weight: var(--wp--custom--font-weight--bold);
+    font-weight: var(--wp--custom--font-weight--regular);
     line-height: 1;
 }
 
 .ravera-trips-filter:hover {
-    background: var(--wp--preset--color--primary);
+    background: var(--wp--custom--color--primary-hover); /* 👈 même hover que bouton */
     color: var(--wp--preset--color--white);
-    text-decoration: none;
 }
 
 .ravera-trips-filter.is-active {
-    background: var(--wp--preset--color--primary-accent);
+    background: var(--wp--preset--color--primary-accent); /* 👈 rouge foncé pour actif */
     color: var(--wp--preset--color--white);
 }
