@@ -30,7 +30,7 @@ require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsTaxonomy.php';
 // require_once plugin_dir_path(__FILE__) . 'inc/ravera6aBoursesTaxonomy.php';
 
 require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsSecurity.php';
-require_once plugin_dir_path(__FILE__) . 'inc/ravera6atripsArchives.php';
+require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsArchive.php';
 
 require_once plugin_dir_path(__FILE__) . 'inc/ravera6aContactForm.php'; 
 
