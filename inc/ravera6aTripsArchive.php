@@ -37,7 +37,7 @@ class ravera6aTripsArchive
         $year_to_use = $selected_year !== '' ? $selected_year : $default_year;
 
         $query->set('post_type', ravera6aTripsPostType::POST_TYPE);
-        $query->set('posts_per_page', 9);
+        $query->set('posts_per_page', 6);
         $query->set('meta_key', 'date');
         $query->set('orderby', 'meta_value');
         $query->set('meta_type', 'DATE');
