@@ -91,18 +91,22 @@ class ravera6aFields
     {
         add_action('pre_get_posts', function ($query) {
             if (
-                !is_admin() &&
-                $query->is_main_query() &&
-                is_post_type_archive(ravera6aBoursesPostType::POST_TYPE)
+                is_admin()
+                || ! $query->is_main_query()
+                || ! is_post_type_archive(ravera6aBoursesPostType::POST_TYPE)
             ) {
-                $query->set('meta_key', 'date');
-                $query->set('orderby', 'meta_value');
-                $query->set('meta_type', 'DATE');
-                $query->set('order', 'DESC');
+                return;
             }
+
+            $query->set('post_type', ravera6aBoursesPostType::POST_TYPE);
+            $query->set('posts_per_page', 6);
+            $query->set('meta_key', 'date');
+            $query->set('orderby', 'meta_value');
+            $query->set('meta_type', 'DATE');
+            $query->set('order', 'DESC');
         });
     }
-
+    
     public function register(): void
     {
         add_action('acf/init', [$this, 'defineFields']);
