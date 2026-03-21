@@ -3,7 +3,7 @@ namespace Ravera6a;
 
 class ravera6aTripsPostType
 {
-    public const POST_TYPE = 'sorties';
+    public const POST_TYPE = 'trips';
 
     public function definePostType(): void
     {
@@ -27,7 +27,7 @@ class ravera6aTripsPostType
             'labels' => $labels,
             'description' => __('Gérer les sorties.', 'ravera6a'),
             'public' => true,
-            'rewrite' => ['slug' => self::POST_TYPE],
+            'rewrite' => ['slug' => 'sorties'],
             'has_archive' => true,
             'show_in_menu' => true,
             'show_in_rest' => true,

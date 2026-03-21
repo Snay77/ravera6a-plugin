@@ -21,7 +21,7 @@ class ravera6aTripsSecurity
         }
 
         add_submenu_page(
-            'edit.php?post_type=trips',
+            'edit.php?post_type=' . ravera6aTripsPostType::POST_TYPE,
             'Sécurité',
             'Sécurité',
             'manage_options',
@@ -140,7 +140,7 @@ class ravera6aTripsSecurity
         $password = is_string($password) ? $password : '';
 
         $tripIds = get_posts([
-            'post_type' => 'trips',
+            'post_type' => ravera6aTripsPostType::POST_TYPE,
             'post_status' => ['publish', 'future', 'draft', 'pending', 'private'],
             'posts_per_page' => -1,
             'fields' => 'ids',
@@ -189,7 +189,7 @@ class ravera6aTripsSecurity
             return;
         }
 
-        if ($post->post_type !== 'trips') {
+        if ($post->post_type !== ravera6aTripsPostType::POST_TYPE) {
             return;
         }
 

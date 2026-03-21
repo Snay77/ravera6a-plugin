@@ -1,9 +1,10 @@
 <?php
+
 namespace Ravera6a;
 
 class ravera6aNewsPostType
 {
-    public const POST_TYPE = 'actualites';
+    public const POST_TYPE = 'news';
 
     public function definePostType(): void
     {
@@ -27,7 +28,7 @@ class ravera6aNewsPostType
             'labels' => $labels,
             'description' => __('Gérer les actualités.', 'ravera6a'),
             'public' => true,
-            'rewrite' => ['slug' => self::POST_TYPE],
+            'rewrite' => ['slug' => 'actualites'],
             'has_archive' => true,
             'show_in_menu' => true,
             'show_in_rest' => true,
