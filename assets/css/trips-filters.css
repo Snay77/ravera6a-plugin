@@ -1,0 +1,33 @@
+.ravera-trips-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: var(--wp--preset--spacing--l);
+}
+
+.ravera-trips-filter {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 18px;
+    border-radius: var(--wp--custom--radius--full);
+    background: var(--wp--preset--color--white);
+    color: var(--wp--preset--color--primary-accent);
+    text-decoration: none;
+    box-shadow: var(--wp--preset--shadow--medium);
+    transition: all 0.3s ease-in;
+    font-size: var(--wp--preset--font-size--s);
+    font-weight: var(--wp--custom--font-weight--bold);
+    line-height: 1;
+}
+
+.ravera-trips-filter:hover {
+    background: var(--wp--preset--color--primary);
+    color: var(--wp--preset--color--white);
+    text-decoration: none;
+}
+
+.ravera-trips-filter.is-active {
+    background: var(--wp--preset--color--primary-accent);
+    color: var(--wp--preset--color--white);
+}

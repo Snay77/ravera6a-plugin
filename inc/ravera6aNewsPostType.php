@@ -3,7 +3,7 @@ namespace Ravera6a;
 
 class ravera6aNewsPostType
 {
-    public const POST_TYPE = 'news';
+    public const POST_TYPE = 'actualites';
 
     public function definePostType(): void
     {

@@ -93,20 +93,30 @@ class ravera6aFields
             if (
                 is_admin()
                 || ! $query->is_main_query()
-                || ! is_post_type_archive(ravera6aBoursesPostType::POST_TYPE)
             ) {
                 return;
             }
 
-            $query->set('post_type', ravera6aBoursesPostType::POST_TYPE);
-            $query->set('posts_per_page', 6);
-            $query->set('meta_key', 'date');
-            $query->set('orderby', 'meta_value');
-            $query->set('meta_type', 'DATE');
-            $query->set('order', 'DESC');
+            if (is_post_type_archive(ravera6aBoursesPostType::POST_TYPE)) {
+                $query->set('post_type', ravera6aBoursesPostType::POST_TYPE);
+                $query->set('posts_per_page', 6);
+                $query->set('meta_key', 'date');
+                $query->set('orderby', 'meta_value');
+                $query->set('meta_type', 'DATE');
+                $query->set('order', 'DESC');
+            }
+
+            if (is_post_type_archive(ravera6aNewsPostType::POST_TYPE)) {
+                $query->set('post_type', ravera6aNewsPostType::POST_TYPE);
+                $query->set('posts_per_page', 6);
+                $query->set('meta_key', 'date');
+                $query->set('orderby', 'meta_value');
+                $query->set('meta_type', 'DATE');
+                $query->set('order', 'DESC');
+            }
         });
     }
-    
+
     public function register(): void
     {
         add_action('acf/init', [$this, 'defineFields']);

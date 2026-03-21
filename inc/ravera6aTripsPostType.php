@@ -3,7 +3,7 @@ namespace Ravera6a;
 
 class ravera6aTripsPostType
 {
-    public const POST_TYPE = 'trips';
+    public const POST_TYPE = 'sorties';
 
     public function definePostType(): void
     {

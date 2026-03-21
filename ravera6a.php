@@ -30,6 +30,7 @@ require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsTaxonomy.php';
 // require_once plugin_dir_path(__FILE__) . 'inc/ravera6aBoursesTaxonomy.php';
 
 require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsSecurity.php';
+require_once plugin_dir_path(__FILE__) . 'inc/ravera6atripsarchives.php';
 
 require_once plugin_dir_path(__FILE__) . 'inc/ravera6aContactForm.php'; 
 
@@ -46,6 +47,7 @@ use Ravera6a\ravera6aTripsTaxonomy;
 // use Ravera6a\ravera6aBoursesTaxonomy;
 
 use Ravera6a\ravera6aTripsSecurity;
+use Ravera6a\ravera6aTripsArchive;
 
 use Ravera6a\ContactForm;
 
@@ -60,5 +62,6 @@ use Ravera6a\ContactForm;
 // (new ravera6aBoursesTaxonomy())->register();
 
 (new ravera6aTripsSecurity())->register();
+(new ravera6aTripsArchive())->register();
 
 (new ContactForm())->register();
