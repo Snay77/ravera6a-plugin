@@ -17,7 +17,7 @@ if ( ! function_exists('acf_add_local_field_group') ) {
         echo __('Ravera6a nécessite le plugin Advanced Custom Fields (version gratuite) pour fonctionner.', 'ravera6a');
         echo '</p></div>';
     });
-};
+}
 
 require_once plugin_dir_path(__FILE__) . 'inc/ravera6aNewsPostType.php';
 require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsPostType.php';
@@ -32,9 +32,7 @@ require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsTaxonomy.php';
 require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsSecurity.php';
 require_once plugin_dir_path(__FILE__) . 'inc/ravera6aTripsArchive.php';
 
-require_once plugin_dir_path(__FILE__) . 'inc/ravera6aContactForm.php'; 
-
-
+require_once plugin_dir_path(__FILE__) . 'inc/ravera6aContactForm.php';
 
 use Ravera6a\ravera6aNewsPostType;
 use Ravera6a\ravera6aTripsPostType;
@@ -65,3 +63,40 @@ use Ravera6a\ContactForm;
 (new ravera6aTripsArchive())->register();
 
 (new ContactForm())->register();
+
+/**
+ * Charge le CSS/JS du prévisualiseur uniquement
+ * sur les singles des 3 CPT.
+ */
+function ravera6a_enqueue_lightbox_assets() {
+    if ( is_admin() ) {
+        return;
+    }
+
+    if ( ! is_singular(array('news', 'trips', 'bourses')) ) {
+        return;
+    }
+
+    $plugin_url  = plugin_dir_url(__FILE__);
+    $plugin_path = plugin_dir_path(__FILE__);
+
+    wp_enqueue_style(
+        'ravera6a-lightbox',
+        $plugin_url . 'assets/css/ravera6a-lightbox.css',
+        array(),
+        file_exists($plugin_path . 'assets/css/ravera6a-lightbox.css')
+            ? filemtime($plugin_path . 'assets/css/ravera6a-lightbox.css')
+            : '1.0.0'
+    );
+
+    wp_enqueue_script(
+        'ravera6a-lightbox',
+        $plugin_url . 'assets/js/ravera6a-lightbox.js',
+        array(),
+        file_exists($plugin_path . 'assets/js/ravera6a-lightbox.js')
+            ? filemtime($plugin_path . 'assets/js/ravera6a-lightbox.js')
+            : '1.0.0',
+        true
+    );
+}
+add_action('wp_enqueue_scripts', 'ravera6a_enqueue_lightbox_assets');
