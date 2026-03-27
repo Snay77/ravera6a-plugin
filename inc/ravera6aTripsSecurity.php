@@ -5,13 +5,15 @@ namespace Ravera6a;
 class ravera6aTripsSecurity
 {
     public const OPTION_NAME = 'ravera6a_trips_password';
-    public const COOKIE_NAME = 'ravera6a_trips_access';
 
     public function register(): void
     {
         add_action('admin_menu', [$this, 'addSubmenu']);
         add_action('admin_init', [$this, 'registerSettings']);
-        add_action('template_redirect', [$this, 'handleTripsProtection'], 1);
+        add_action('admin_init', [$this, 'maybeSyncAfterSettingsSave']);
+        add_action('save_post', [$this, 'applyPasswordToTrip'], 20, 3);
+
+        add_filter('the_password_form', [$this, 'customizeTripsPasswordForm']);
     }
 
     public function addSubmenu(): void
@@ -46,9 +48,8 @@ class ravera6aTripsSecurity
             'ravera6a_trips_security_section',
             'Protection des sorties',
             function () {
-                echo '<p>Définis ici le mot de passe global appliqué à toute la section sorties.</p>';
-                echo '<p>Il protégera à la fois la page archive /sorties et toutes les fiches sorties.</p>';
-                echo '<p>Si le champ est vide, la section sorties ne sera plus protégée.</p>';
+                echo '<p>Définis ici le mot de passe global appliqué à tous les articles du CPT Trips.</p>';
+                echo '<p>Si le champ est vide, les articles Trips ne seront plus protégés par mot de passe.</p>';
             },
             'ravera6a-trips-security'
         );
@@ -82,7 +83,7 @@ class ravera6aTripsSecurity
             class="regular-text"
             autocomplete="off" />
         <p class="description">
-            Ce mot de passe protégera la page /sorties ainsi que toutes les fiches du CPT Trips.
+            Ce mot de passe sera appliqué automatiquement à tous les articles Trips existants et futurs.
         </p>
         <?php
     }
@@ -108,261 +109,162 @@ class ravera6aTripsSecurity
         <?php
     }
 
-    public function handleTripsProtection(): void
+    public function maybeSyncAfterSettingsSave(): void
     {
-        if (is_admin()) {
+        if (! is_admin()) {
             return;
         }
 
-        $isTripsArchive = is_post_type_archive(ravera6aTripsPostType::POST_TYPE);
-        $isTripsSingle  = is_singular(ravera6aTripsPostType::POST_TYPE);
-
-        if (! $isTripsArchive && ! $isTripsSingle) {
+        if (! current_user_can('manage_options')) {
             return;
         }
+
+        if (! isset($_GET['page'], $_GET['settings-updated'])) {
+            return;
+        }
+
+        if ($_GET['page'] !== 'ravera6a-trips-security') {
+            return;
+        }
+
+        if ($_GET['settings-updated'] !== 'true') {
+            return;
+        }
+
+        $this->syncAllTripsPasswords();
+    }
+
+    public function syncAllTripsPasswords(): void
+    {
+        global $wpdb;
 
         $password = get_option(self::OPTION_NAME, '');
         $password = is_string($password) ? $password : '';
 
-        if ($password === '') {
+        $tripIds = get_posts([
+            'post_type' => ravera6aTripsPostType::POST_TYPE,
+            'post_status' => ['publish', 'future', 'draft', 'pending', 'private'],
+            'posts_per_page' => -1,
+            'fields' => 'ids',
+            'orderby' => 'ID',
+            'order' => 'ASC',
+            'no_found_rows' => true,
+            'suppress_filters' => true,
+        ]);
+
+        if (empty($tripIds)) {
             return;
         }
 
-        if (
-            $_SERVER['REQUEST_METHOD'] === 'POST'
-            && isset($_POST['ravera6a_trips_access_password'])
-        ) {
-            $submittedPassword = sanitize_text_field(
-                wp_unslash($_POST['ravera6a_trips_access_password'])
+        foreach ($tripIds as $tripId) {
+            $wpdb->update(
+                $wpdb->posts,
+                [
+                    'post_password' => $password,
+                ],
+                [
+                    'ID' => $tripId,
+                ],
+                [
+                    '%s',
+                ],
+                [
+                    '%d',
+                ]
             );
 
-            if (hash_equals($password, $submittedPassword)) {
-                $this->setAccessCookie($password);
-
-                $redirectUrl = $this->getCurrentRequestUrl();
-                if ($redirectUrl === '') {
-                    $redirectUrl = get_post_type_archive_link(ravera6aTripsPostType::POST_TYPE);
-                }
-
-                wp_safe_redirect($redirectUrl);
-                exit;
-            }
-
-            $this->renderPasswordForm(true);
-            exit;
+            clean_post_cache($tripId);
         }
+    }
 
-        if ($this->hasValidAccessCookie($password)) {
+    public function applyPasswordToTrip(int $postId, \WP_Post $post, bool $update): void
+    {
+        if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
             return;
         }
 
-        $this->renderPasswordForm(false);
-        exit;
-    }
-
-    protected function hasValidAccessCookie(string $password): bool
-    {
-        if (! isset($_COOKIE[self::COOKIE_NAME])) {
-            return false;
+        if (wp_is_post_revision($postId)) {
+            return;
         }
 
-        $cookieValue = sanitize_text_field(wp_unslash($_COOKIE[self::COOKIE_NAME]));
-        $expected    = wp_hash($password);
-
-        return hash_equals($expected, $cookieValue);
-    }
-
-    protected function setAccessCookie(string $password): void
-    {
-        $value    = wp_hash($password);
-        $expire   = time() + DAY_IN_SECONDS;
-        $secure   = is_ssl();
-        $httponly = true;
-        $path     = defined('COOKIEPATH') && COOKIEPATH ? COOKIEPATH : '/';
-
-        setcookie(
-            self::COOKIE_NAME,
-            $value,
-            [
-                'expires'  => $expire,
-                'path'     => $path,
-                'secure'   => $secure,
-                'httponly' => $httponly,
-                'samesite' => 'Lax',
-            ]
-        );
-
-        $_COOKIE[self::COOKIE_NAME] = $value;
-    }
-
-    protected function getCurrentRequestUrl(): string
-    {
-        $requestUri = isset($_SERVER['REQUEST_URI']) ? wp_unslash($_SERVER['REQUEST_URI']) : '';
-
-        if (! is_string($requestUri) || $requestUri === '') {
-            return '';
+        if (wp_is_post_autosave($postId)) {
+            return;
         }
 
-        return home_url($requestUri);
-    }
-
-    protected function renderPasswordForm(bool $hasError = false): void
-    {
-        status_header(200);
-        nocache_headers();
-
-        $targetUrl = $this->getCurrentRequestUrl();
-        if ($targetUrl === '') {
-            $targetUrl = get_post_type_archive_link(ravera6aTripsPostType::POST_TYPE);
+        if ($post->post_type !== ravera6aTripsPostType::POST_TYPE) {
+            return;
         }
 
+        $globalPassword = get_option(self::OPTION_NAME, '');
+        $globalPassword = is_string($globalPassword) ? $globalPassword : '';
+
+        if ($post->post_password === $globalPassword) {
+            return;
+        }
+
+        remove_action('save_post', [$this, 'applyPasswordToTrip'], 20);
+
+        wp_update_post([
+            'ID' => $postId,
+            'post_password' => $globalPassword,
+        ]);
+
+        add_action('save_post', [$this, 'applyPasswordToTrip'], 20, 3);
+    }
+
+    public function customizeTripsPasswordForm(string $output): string
+    {
+        $post = get_post();
+
+        if (! $post instanceof \WP_Post) {
+            return $output;
+        }
+
+        if ($post->post_type !== ravera6aTripsPostType::POST_TYPE) {
+            return $output;
+        }
+
+        $labelId = 'pwbox-' . (int) $post->ID;
+        $action  = esc_url(site_url('wp-login.php?action=postpass', 'login_post'));
+
+        ob_start();
         ?>
-        <!DOCTYPE html>
-        <html <?php language_attributes(); ?>>
-        <head>
-            <meta charset="<?php bloginfo('charset'); ?>">
-            <meta name="viewport" content="width=device-width, initial-scale=1">
-            <title>Accès réservé</title>
-            <?php wp_head(); ?>
-            <style>
-                .ravera6a-trips-protected-page {
-                    min-height: 100vh;
-                }
+        <div class="wp-block-group alignwide" style="padding-top:var(--wp--preset--spacing--xl);padding-bottom:var(--wp--preset--spacing--xl);">
+            <div class="wp-block-group" style="max-width:640px;margin-left:auto;margin-right:auto;padding:var(--wp--preset--spacing--l);border:1px solid var(--wp--preset--color--form-border-input);border-radius:var(--wp--custom--radius--m);background:var(--wp--preset--color--white);box-shadow:var(--wp--preset--shadow--medium);">
+                <!-- wp:heading {"level":1} -->
+                <h1 class="wp-block-heading">Accès réservé</h1>
+                <!-- /wp:heading -->
 
-                .ravera6a-trips-protected-main {
-                    padding-top: var(--wp--preset--spacing--xl, 64px);
-                    padding-bottom: var(--wp--preset--spacing--xl, 64px);
-                }
+                <!-- wp:paragraph -->
+                <p>Veuillez entrer le code d'accès pour voir cette page :</p>
+                <!-- /wp:paragraph -->
 
-                .ravera6a-trips-protected-box {
-                    max-width: 640px;
-                    margin: 0 auto;
-                    background: var(--wp--preset--color--white, #FFFAF2);
-                    border: 1px solid var(--wp--preset--color--form-border-input, #CFCFCF);
-                    border-radius: var(--wp--custom--radius--m, 16px);
-                    padding: var(--wp--preset--spacing--l, 32px);
-                    box-sizing: border-box;
-                    box-shadow: var(--wp--preset--shadow--medium, 0px 30px 60px 0 rgba(138, 149, 158, 0.2));
-                }
+                <form class="post-password-form" action="<?php echo $action; ?>" method="post">
+                    <label for="<?php echo esc_attr($labelId); ?>" style="display:block;margin-bottom:8px;font-weight:700;color:var(--wp--preset--color--primary-accent);">
+                        Code d'accès
+                    </label>
 
-                .ravera6a-trips-protected-text {
-                    margin-top: 0;
-                    margin-bottom: var(--wp--preset--spacing--m, 24px);
-                }
+                    <input
+                        name="post_password"
+                        id="<?php echo esc_attr($labelId); ?>"
+                        type="password"
+                        spellcheck="false"
+                        size="20"
+                        placeholder="Code d'accès"
+                        style="width:100%;min-height:48px;padding:12px 14px;margin-bottom:var(--wp--preset--spacing--m);border:1px solid var(--wp--preset--color--form-border-input);border-radius:var(--wp--custom--radius--s);background:var(--wp--preset--color--form-background-input);color:var(--wp--preset--color--black);box-sizing:border-box;font:inherit;" />
 
-                .ravera6a-trips-protected-error {
-                    margin-top: 0;
-                    margin-bottom: var(--wp--preset--spacing--m, 24px);
-                    padding: 12px 14px;
-                    border-radius: var(--wp--custom--radius--s, 8px);
-                    background: #fdeaea;
-                    color: #8f1111;
-                }
-
-                .ravera6a-trips-protected-label {
-                    display: block;
-                    margin-bottom: 8px;
-                    font-size: var(--wp--preset--font-size--s, 16px);
-                    font-weight: var(--wp--custom--font-weight--bold, 700);
-                    color: var(--wp--preset--color--primary-accent, #4A0605);
-                }
-
-                .ravera6a-trips-protected-input {
-                    width: 100%;
-                    min-height: 48px;
-                    padding: 12px 14px;
-                    margin-bottom: var(--wp--preset--spacing--m, 24px);
-                    border: 1px solid var(--wp--preset--color--form-border-input, #CFCFCF);
-                    border-radius: var(--wp--custom--radius--s, 8px);
-                    background: var(--wp--preset--color--form-background-input, #EBE7E2);
-                    color: var(--wp--preset--color--black, #1A1A1A);
-                    font-family: inherit;
-                    font-size: var(--wp--preset--font-size--s, 16px);
-                    box-sizing: border-box;
-                }
-
-                .ravera6a-trips-protected-input::placeholder {
-                    color: var(--wp--preset--color--grey, #3D3D3D);
-                    opacity: 1;
-                }
-
-                .ravera6a-trips-protected-actions {
-                    margin-top: 0;
-                    margin-bottom: 0;
-                }
-
-                .ravera6a-trips-protected-actions .wp-block-button {
-                    margin: 0;
-                }
-
-                .ravera6a-trips-protected-actions .wp-block-button__link {
-                    border: 0;
-                    cursor: pointer;
-                }
-
-                @media (max-width: 782px) {
-                    .ravera6a-trips-protected-main {
-                        padding-top: var(--wp--preset--spacing--l, 32px);
-                        padding-bottom: var(--wp--preset--spacing--l, 32px);
-                    }
-
-                    .ravera6a-trips-protected-box {
-                        padding: var(--wp--preset--spacing--m, 24px);
-                    }
-                }
-            </style>
-        </head>
-        <body <?php body_class('ravera6a-trips-protected-page'); ?>>
-            <?php wp_body_open(); ?>
-
-            <?php
-            echo do_blocks('<!-- wp:template-part {"slug":"header","theme":"ravera6a","area":"uncategorized"} /-->');
-            ?>
-
-            <main class="wp-block-group ravera6a-trips-protected-main alignfull">
-                <div class="wp-block-group alignwide" style="max-width:var(--wp--style--global--wide-size, 1400px);margin-left:auto;margin-right:auto;padding-left:var(--wp--preset--spacing--s,16px);padding-right:var(--wp--preset--spacing--s,16px);">
-                    <div class="ravera6a-trips-protected-box">
-                        <?php
-                        echo do_blocks('<!-- wp:heading {"level":1} --><h1 class="wp-block-heading">Accès réservé</h1><!-- /wp:heading -->');
-                        ?>
-
-                        <?php
-                        echo do_blocks('<!-- wp:paragraph --><p>Veuillez entrer le code d\'accès pour voir cette page :</p><!-- /wp:paragraph -->');
-                        ?>
-
-                        <?php if ($hasError): ?>
-                            <p class="ravera6a-trips-protected-error">Code d'accès incorrect.</p>
-                        <?php endif; ?>
-
-                        <form method="post" action="<?php echo esc_url($targetUrl); ?>">
-                            <label class="ravera6a-trips-protected-label" for="ravera6a-trips-access-password">
-                                Code d'accès
-                            </label>
-
-                            <input
-                                class="ravera6a-trips-protected-input"
-                                id="ravera6a-trips-access-password"
-                                name="ravera6a_trips_access_password"
-                                type="password"
-                                required
-                                autocomplete="current-password"
-                                placeholder="Code d'accès" />
-
-                            <div class="wp-block-buttons ravera6a-trips-protected-actions">
-                                <div class="wp-block-button">
-                                    <button class="wp-block-button__link wp-element-button" type="submit">
-                                        Validé
-                                    </button>
-                                </div>
-                            </div>
-                        </form>
+                    <div class="wp-block-buttons">
+                        <div class="wp-block-button">
+                            <button class="wp-block-button__link wp-element-button" type="submit" name="Submit">
+                                Validé
+                            </button>
+                        </div>
                     </div>
-                </div>
-            </main>
-
-            <?php wp_footer(); ?>
-        </body>
-        </html>
+                </form>
+            </div>
+        </div>
         <?php
+
+        return ob_get_clean();
     }
 }
