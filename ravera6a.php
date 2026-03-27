@@ -65,15 +65,28 @@ use Ravera6a\ContactForm;
 (new ContactForm())->register();
 
 /**
- * Charge le CSS/JS du prévisualiseur uniquement
- * sur les singles des 3 CPT.
+ * Charge le prévisualiseur :
+ * - sur les singles news / trips / bourses
+ * - ou sur toute page contenant le block ravera/gallery
  */
 function ravera6a_enqueue_lightbox_assets() {
-    if ( is_admin() ) {
+    if (is_admin()) {
         return;
     }
 
-    if ( ! is_singular(array('news', 'trips', 'bourses')) ) {
+    $should_load = false;
+
+    if (is_singular(array('news', 'trips', 'bourses'))) {
+        $should_load = true;
+    } elseif (is_singular()) {
+        global $post;
+
+        if ($post instanceof WP_Post && has_block('ravera/gallery', $post)) {
+            $should_load = true;
+        }
+    }
+
+    if (!$should_load) {
         return;
     }
 
@@ -97,6 +110,14 @@ function ravera6a_enqueue_lightbox_assets() {
             ? filemtime($plugin_path . 'assets/js/ravera6a-lightbox.js')
             : '1.0.0',
         true
+    );
+
+    wp_add_inline_script(
+        'ravera6a-lightbox',
+        'window.ravera6aLightbox = ' . wp_json_encode(array(
+            'enableAllPostContentImages' => is_singular(array('news', 'trips', 'bourses')),
+        )) . ';',
+        'before'
     );
 }
 add_action('wp_enqueue_scripts', 'ravera6a_enqueue_lightbox_assets');

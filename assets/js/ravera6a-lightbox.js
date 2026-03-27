@@ -1,7 +1,11 @@
 document.addEventListener('DOMContentLoaded', function () {
-    const contentRoot = document.querySelector('.wp-block-post-content');
+    const config = window.ravera6aLightbox || {};
+    const enableAllPostContentImages = !!config.enableAllPostContentImages;
 
-    if (!contentRoot) {
+    const galleryRoots = Array.from(document.querySelectorAll('[data-ravera-gallery="1"]'));
+    const postContentRoot = document.querySelector('.wp-block-post-content');
+
+    if (!enableAllPostContentImages && !galleryRoots.length) {
         return;
     }
 
@@ -67,36 +71,52 @@ document.addEventListener('DOMContentLoaded', function () {
         }, 200);
     }
 
+    function isEligibleImage(img) {
+        if (!img || !img.src) {
+            return false;
+        }
+
+        if (img.closest('.ravera6a-lightbox')) {
+            return false;
+        }
+
+        if (img.closest('[data-ravera-gallery="1"]')) {
+            return true;
+        }
+
+        if (enableAllPostContentImages && postContentRoot && postContentRoot.contains(img)) {
+            return true;
+        }
+
+        return false;
+    }
+
     function markImagesAsClickable(root) {
         const images = root.querySelectorAll('img');
 
         images.forEach(function (img) {
-            if (!img.src) {
-                return;
+            if (isEligibleImage(img)) {
+                img.classList.add('ravera6a-lightbox-enabled');
             }
-
-            if (img.closest('.ravera6a-lightbox')) {
-                return;
-            }
-
-            img.classList.add('ravera6a-lightbox-enabled');
         });
     }
 
-    markImagesAsClickable(contentRoot);
+    if (enableAllPostContentImages && postContentRoot) {
+        markImagesAsClickable(postContentRoot);
+    }
 
-    contentRoot.addEventListener('click', function (event) {
+    galleryRoots.forEach(function (galleryRoot) {
+        markImagesAsClickable(galleryRoot);
+    });
+
+    document.addEventListener('click', function (event) {
         const img = event.target.closest('img');
 
         if (!img) {
             return;
         }
 
-        if (!contentRoot.contains(img)) {
-            return;
-        }
-
-        if (img.closest('.ravera6a-lightbox')) {
+        if (!isEligibleImage(img)) {
             return;
         }
 
@@ -127,7 +147,9 @@ document.addEventListener('DOMContentLoaded', function () {
                 }
 
                 if (node.matches && node.matches('img')) {
-                    node.classList.add('ravera6a-lightbox-enabled');
+                    if (isEligibleImage(node)) {
+                        node.classList.add('ravera6a-lightbox-enabled');
+                    }
                 } else {
                     markImagesAsClickable(node);
                 }
@@ -135,7 +157,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     });
 
-    observer.observe(contentRoot, {
+    observer.observe(document.body, {
         childList: true,
         subtree: true
     });
