@@ -27,17 +27,41 @@ document.addEventListener('DOMContentLoaded', function () {
     const closeButton = lightbox.querySelector('.ravera6a-lightbox__close');
     const previewImage = lightbox.querySelector('.ravera6a-lightbox__image');
 
+    // 🔥 VERSION AMÉLIORÉE
     function getBestImageSrc(img) {
         const link = img.closest('a');
 
+        // 1. Si image cliquable → souvent version full
         if (link && link.href && /\.(jpg|jpeg|png|gif|webp|avif|svg)(\?.*)?$/i.test(link.href)) {
             return link.href;
         }
 
+        // 2. Si WordPress fournit srcset → prendre la plus grande
+        if (img.srcset) {
+            const sources = img.srcset.split(',').map(s => s.trim());
+
+            const largest = sources
+                .map(src => {
+                    const [url, size] = src.split(' ');
+                    return {
+                        url,
+                        width: parseInt(size)
+                    };
+                })
+                .filter(s => !isNaN(s.width))
+                .sort((a, b) => b.width - a.width)[0];
+
+            if (largest && largest.url) {
+                return largest.url;
+            }
+        }
+
+        // 3. fallback dataset
         if (img.dataset && img.dataset.fullUrl) {
             return img.dataset.fullUrl;
         }
 
+        // 4. fallback classique
         if (img.currentSrc) {
             return img.currentSrc;
         }
