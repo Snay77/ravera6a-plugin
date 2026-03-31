@@ -5,7 +5,15 @@ document.addEventListener('DOMContentLoaded', function () {
     const galleryRoots = Array.from(document.querySelectorAll('[data-ravera-gallery="1"]'));
     const postContentRoot = document.querySelector('.wp-block-post-content');
 
-    if (!enableAllPostContentImages && !galleryRoots.length) {
+    const allowedPages = [
+        'page-les-vehicules-du-club'
+    ];
+
+    const isAllowedStaticPage = allowedPages.some(function (cls) {
+        return document.body.classList.contains(cls);
+    });
+
+    if (!enableAllPostContentImages && !galleryRoots.length && !isAllowedStaticPage) {
         return;
     }
 
@@ -94,14 +102,8 @@ document.addEventListener('DOMContentLoaded', function () {
             return true;
         }
 
-        const allowedPages = [
-            'les-vehicules-du-club'
-        ];
-
-        if (allowedPages.some(cls => document.body.classList.contains(cls))) {
-            if (postContentRoot && postContentRoot.contains(img)) {
-                return true;
-            }
+        if (isAllowedStaticPage && postContentRoot && postContentRoot.contains(img)) {
+            return true;
         }
 
         return false;
@@ -111,18 +113,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const seen = new Set();
         const images = [];
 
-        if (enableAllPostContentImages && postContentRoot) {
+        if ((enableAllPostContentImages || isAllowedStaticPage) && postContentRoot) {
             postContentRoot.querySelectorAll('img').forEach(function (img) {
                 if (!isEligibleImage(img)) {
                     return;
                 }
 
-                const key = img;
-                if (seen.has(key)) {
+                if (seen.has(img)) {
                     return;
                 }
 
-                seen.add(key);
+                seen.add(img);
                 images.push(img);
             });
         }
@@ -133,12 +134,11 @@ document.addEventListener('DOMContentLoaded', function () {
                     return;
                 }
 
-                const key = img;
-                if (seen.has(key)) {
+                if (seen.has(img)) {
                     return;
                 }
 
-                seen.add(key);
+                seen.add(img);
                 images.push(img);
             });
         });
@@ -236,7 +236,7 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    if (enableAllPostContentImages && postContentRoot) {
+    if ((enableAllPostContentImages || isAllowedStaticPage) && postContentRoot) {
         markImagesAsClickable(postContentRoot);
     }
 
@@ -261,10 +261,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
     closeButton.addEventListener('click', closeLightbox);
     backdrop.addEventListener('click', closeLightbox);
+
     prevButton.addEventListener('click', function (event) {
         event.stopPropagation();
         showPreviousImage();
     });
+
     nextButton.addEventListener('click', function (event) {
         event.stopPropagation();
         showNextImage();
