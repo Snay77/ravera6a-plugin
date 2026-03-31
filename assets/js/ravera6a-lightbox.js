@@ -16,10 +16,10 @@ document.addEventListener('DOMContentLoaded', function () {
     lightbox.innerHTML = `
         <div class="ravera6a-lightbox__backdrop"></div>
         <div class="ravera6a-lightbox__dialog" role="dialog" aria-modal="true" aria-label="Prévisualisation de l’image">
-            <button type="button" class="ravera6a-lightbox__close" aria-label="Fermer la prévisualisation">×</button>
-            <button type="button" class="ravera6a-lightbox__nav ravera6a-lightbox__nav--prev" aria-label="Image précédente">‹</button>
+            <button type="button" class="ravera6a-lightbox__close" aria-label="Fermer la prévisualisation"><span>×</span></button>
+            <button type="button" class="ravera6a-lightbox__nav ravera6a-lightbox__nav--prev" aria-label="Image précédente"><span>‹</span></button>
             <img class="ravera6a-lightbox__image" src="" alt="">
-            <button type="button" class="ravera6a-lightbox__nav ravera6a-lightbox__nav--next" aria-label="Image suivante">›</button>
+            <button type="button" class="ravera6a-lightbox__nav ravera6a-lightbox__nav--next" aria-label="Image suivante"><span>›</span></button>
         </div>
     `;
 
