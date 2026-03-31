@@ -81,8 +81,8 @@
     height: 52px;
     border: 0;
     border-radius: 999px;
-    background: rgba(20, 20, 20, 0.92);
-    color: #fff;
+    background: var(--wp--preset--color--white);
+    color: var(--wp--preset--color--primary-accent);
     font-size: 34px;
     line-height: 1;
     cursor: pointer;
@@ -111,7 +111,8 @@
 .ravera6a-lightbox__close:focus,
 .ravera6a-lightbox__nav:hover,
 .ravera6a-lightbox__nav:focus {
-    background: rgba(0, 0, 0, 1);
+    background: var(--wp--preset--color--white);
+    opacity: 0.9;
 }
 
 .ravera6a-lightbox__nav[hidden] {
@@ -120,6 +121,12 @@
 
 body.ravera6a-lightbox-open {
     overflow: hidden;
+}
+
+.ravera6a-lightbox__nav span {
+    display: block;
+    line-height: 1;
+    transform: translateY(-1px);
 }
 
 @media (max-width: 1100px) {
