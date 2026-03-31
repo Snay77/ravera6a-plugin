@@ -5,13 +5,23 @@ document.addEventListener('DOMContentLoaded', function () {
     const galleryRoots = Array.from(document.querySelectorAll('[data-ravera-gallery="1"]'));
     const postContentRoot = document.querySelector('.wp-block-post-content');
 
-    const allowedPages = [
-        'page-les-vehicules-du-club'
+    const allowedPageIds = [
+        'page-id-6951',
+        'page-id-7365'
     ];
 
-    const isAllowedStaticPage = allowedPages.some(function (cls) {
-        return document.body.classList.contains(cls);
-    });
+    const allowedPathnames = [
+        '/les-vehicules-du-club/',
+        '/vehicules-a-vendre/'
+    ];
+
+    const isAllowedStaticPage =
+        allowedPageIds.some(function (cls) {
+            return document.body.classList.contains(cls);
+        }) ||
+        allowedPathnames.some(function (path) {
+            return window.location.pathname.indexOf(path) !== -1;
+        });
 
     if (!enableAllPostContentImages && !galleryRoots.length && !isAllowedStaticPage) {
         return;
