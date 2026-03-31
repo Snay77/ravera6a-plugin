@@ -83,7 +83,8 @@
     border-radius: 999px;
     background: var(--wp--preset--color--white);
     color: var(--wp--preset--color--primary-accent);
-    font-size: 34px;
+    font-size: 54px;
+    font-weight: 600;
     line-height: 1;
     cursor: pointer;
     display: inline-flex;
@@ -126,7 +127,7 @@ body.ravera6a-lightbox-open {
 .ravera6a-lightbox__nav span {
     display: block;
     line-height: 1;
-    transform: translateY(-1px);
+    transform: translateY(-3px);
 }
 
 @media (max-width: 1100px) {
