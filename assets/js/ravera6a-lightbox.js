@@ -94,6 +94,16 @@ document.addEventListener('DOMContentLoaded', function () {
             return true;
         }
 
+        const allowedPages = [
+            'page-les-vehicules-du-club'
+        ];
+
+        if (allowedPages.some(cls => document.body.classList.contains(cls))) {
+            if (postContentRoot && postContentRoot.contains(img)) {
+                return true;
+            }
+        }
+
         return false;
     }
 
