@@ -95,7 +95,7 @@ document.addEventListener('DOMContentLoaded', function () {
         }
 
         const allowedPages = [
-            'page-les-vehicules-du-club'
+            'les-vehicules-du-club'
         ];
 
         if (allowedPages.some(cls => document.body.classList.contains(cls))) {
