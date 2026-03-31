@@ -67,6 +67,7 @@ use Ravera6a\ContactForm;
 /**
  * Charge le prévisualiseur :
  * - sur les singles news / trips / bourses
+ * - sur certaines pages statiques ciblées
  * - ou sur toute page contenant le block ravera/gallery
  */
 function ravera6a_enqueue_lightbox_assets() {
@@ -77,6 +78,8 @@ function ravera6a_enqueue_lightbox_assets() {
     $should_load = false;
 
     if (is_singular(array('news', 'trips', 'bourses'))) {
+        $should_load = true;
+    } elseif (is_page(array(6951, 7365))) {
         $should_load = true;
     } elseif (is_singular()) {
         global $post;
