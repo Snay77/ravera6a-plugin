@@ -207,7 +207,7 @@ body.ravera6a-lightbox-open {
         bottom: calc(max(0.5rem, env(safe-area-inset-bottom)) + 0.25rem);
         width: 46px;
         height: 46px;
-        font-size: 28px;
+        font-size: 42px;
     }
 
     .ravera6a-lightbox__nav--prev {
