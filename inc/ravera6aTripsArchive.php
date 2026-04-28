@@ -62,14 +62,9 @@ class ravera6aTripsArchive
 
         wp_enqueue_style('ravera-trips-filters');
 
-        $terms = get_terms([
-            'taxonomy'   => ravera6aTripsTaxonomy::YEAR_TAXONOMY,
-            'hide_empty' => true,
-            'orderby'    => 'name',
-            'order'      => 'DESC',
-        ]);
+        $years = $this->getVisibleTripYears();
 
-        if (is_wp_error($terms) || empty($terms)) {
+        if (empty($years)) {
             return '';
         }
 
@@ -85,9 +80,9 @@ class ravera6aTripsArchive
 
         $output = '<div class="ravera-trips-filters">';
 
-        foreach ($terms as $term) {
-            $is_active = $term->slug === $current_year;
-            $url       = add_query_arg('annee', $term->slug, $archive_url);
+        foreach ($years as $year_slug => $year_name) {
+            $is_active = $year_slug === $current_year;
+            $url       = add_query_arg('annee', $year_slug, $archive_url);
 
             $classes = 'ravera-trips-filter';
             if ($is_active) {
@@ -98,7 +93,7 @@ class ravera6aTripsArchive
                 '<a class="%1$s" href="%2$s">%3$s</a>',
                 esc_attr($classes),
                 esc_url($url),
-                esc_html($term->name)
+                esc_html($year_name)
             );
         }
 
@@ -109,18 +104,64 @@ class ravera6aTripsArchive
 
     private function getLatestTripYear(): string
     {
-        $terms = get_terms([
-            'taxonomy'   => ravera6aTripsTaxonomy::YEAR_TAXONOMY,
-            'hide_empty' => true,
-            'orderby'    => 'name',
-            'order'      => 'DESC',
-            'number'     => 1,
-        ]);
+        $years = $this->getVisibleTripYears();
 
-        if (is_wp_error($terms) || empty($terms)) {
+        if (empty($years)) {
             return '';
         }
 
-        return (string) $terms[0]->slug;
+        $slugs = array_keys($years);
+
+        return (string) $slugs[0];
+    }
+
+    private function getVisibleTripYears(): array
+    {
+        $trips = get_posts([
+            'post_type'      => ravera6aTripsPostType::POST_TYPE,
+            'post_status'    => 'publish',
+            'posts_per_page' => -1,
+            'fields'         => 'ids',
+            'meta_key'       => 'date',
+            'orderby'        => 'meta_value',
+            'meta_type'      => 'DATE',
+            'order'          => 'DESC',
+            'meta_query'     => [
+                [
+                    'relation' => 'OR',
+                    [
+                        'key'     => ravera6aArchiveToggle::META_KEY,
+                        'compare' => 'NOT EXISTS',
+                    ],
+                    [
+                        'key'     => ravera6aArchiveToggle::META_KEY,
+                        'value'   => '1',
+                        'compare' => '!=',
+                    ],
+                ],
+            ],
+        ]);
+
+        if (empty($trips)) {
+            return [];
+        }
+
+        $years = [];
+
+        foreach ($trips as $trip_id) {
+            $terms = get_the_terms($trip_id, ravera6aTripsTaxonomy::YEAR_TAXONOMY);
+
+            if (is_wp_error($terms) || empty($terms)) {
+                continue;
+            }
+
+            foreach ($terms as $term) {
+                $years[$term->slug] = $term->name;
+            }
+        }
+
+        krsort($years, SORT_NATURAL);
+
+        return $years;
     }
 }
